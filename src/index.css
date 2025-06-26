@@ -1,0 +1,107 @@
+@import url("https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap");
+
+/* Tailwind CSS directives - these are valid and required */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /* Hide scrollbar for webkit browsers */
+  ::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Root styles */
+  :root {
+    font-family: "Raleway", sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  /* Body background */
+  body {
+    min-width: 100%;
+    min-height: 100vh;
+    background: radial-gradient(
+      circle at 20% 20%,
+      rgba(95, 0, 160, 1) 0%,
+      rgba(51, 15, 93, 1) 40%,
+      rgba(3, 7, 56, 1) 75%
+    );
+  }
+}
+
+/* Digital clock font */
+@font-face {
+  font-family: "Digital-7 V3";
+  src: local("Digital-7 V3"),
+       url("https://db.onlinewebfonts.com/t/8e22783d707ad140bffe18b2a3812529.woff2") format("woff2"),
+       url("https://db.onlinewebfonts.com/t/8e22783d707ad140bffe18b2a3812529.woff") format("woff"),
+       url("https://db.onlinewebfonts.com/t/8e22783d707ad140bffe18b2a3812529.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer components {
+  /* Interactive elements */
+  .led-icon {
+    @apply max-w-[65px] max-h-[70px] transition duration-150 ease-in-out hover:scale-105 hover:drop-shadow-[0_0_2em_rgba(5,19,33,1)] cursor-pointer xs:flex-shrink;
+  }
+
+  /* Clock component styles */
+  .clock {
+    align-items: center;
+    text-align: center;
+    z-index: 0;
+  }
+
+  .calendar {
+    font-size: 1.9em;
+    display: flex;
+    flex-direction: row;
+    gap: 0.2em;
+    padding: 0 0.38em;
+  }
+
+  .row {
+    line-height: 1.15;
+    margin-top: 1em;
+    margin-bottom: 1em;
+  }
+
+  .hour {
+    font-size: 5.7em;
+    margin-top: 0.2em;
+  }
+
+  .ampm {
+    font-size: 3.5em;
+    display: flex;
+    flex-direction: row;
+    gap: 0.2em;
+    padding: 0 2.2em;
+  }
+
+  /* Digital display styles */
+  .digital {
+    display: inline-block;
+    font-family: "Digital-7 V3", "Courier New", "Monaco", "Consolas", monospace;
+    line-height: 1;
+    margin-top: 0.15em;
+    margin-bottom: -0.25em;
+    z-index: 0;
+  }
+
+  .digital :first-child {
+    position: absolute;
+    color: #79688d3f;
+  }
+
+  .digital :last-child {
+    position: relative;
+    color: #ffffff;
+  }
+}

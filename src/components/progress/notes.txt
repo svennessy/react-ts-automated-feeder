@@ -1,0 +1,115 @@
+Notes/Info learned from progress folder
+
+All functions/constants in the helper file are pure and produce no side effects
+-lfg
+-however:
+
+Some examples of what side effects could look like:
+
+1. Modifying External State:
+❌ BAD: - modifies global variable
+let clickCount = 0;
+
+export const getMealName = (hour: number): string => {
+  clickCount++; // Side effect: modifies external state
+  return MEAL_NAMES[hour] || `Meal at ${hour}:00`;
+};
+
+2. Making API Calls:
+❌ BAD: - makes network request (not sure why the honk you wouldnt want to req the net but again were sending it until proven otherwise)
+export const formatMealTime = async (hour: number): Promise<string> => {
+  const response = await fetch('/api/meal-time'); // Side effect: API call
+  const data = await response.json();
+  return `${hour}:00 ${data.timezone}`;
+};
+
+3. Modifying Input Parameters:
+❌ BAD: - mutates input object
+export const calculateMealDotPositions = (
+  centerX: number,
+  centerY: number,
+  radius: number,
+  config: { meals: number[] } // Input object
+) => {
+  config.meals.push(24); // Side effect: modifies input parameter
+  return config.meals.map((hour) => {
+    // ... calculation logic
+  });
+};
+
+4. DOM Manipulation
+❌ BAD: - directly modifies DOM
+export const getMealStatusForToday = (): boolean[] => {
+  const element = document.getElementById('meal-status');
+  element.innerHTML = 'Updated!'; // Side effect: DOM manipulation
+  return MEAL_TIMES.map((mealHour) => hasMealHappenedToday(mealHour));
+};
+
+5. Throwing Unexpected Errors
+❌ BAD: - throws error based on external state
+export const calculateHorseshoeDimensions = (
+  size: number,
+  strokeWidth: number
+) => {
+  if (Math.random() < 0.1) { // Side effect: unpredictable behavior
+    throw new Error('Random error!');
+  }
+  const radius = (size - strokeWidth) / 2;
+  return { radius, centerX: size / 2, centerY: size / 2 };
+};
+
+
+Why no bueno:
+
+1. Unpredictable
+// Same input, different results!
+getMealName(8); // Returns "Breakfast", clickCount = 1
+getMealName(8); // Returns "Breakfast", clickCount = 2
+getMealName(8); // Returns "Breakfast", clickCount = 3
+
+2. Hard to Test
+// Depends on external state
+test('getMealName returns correct name', () => {
+  const result = getMealName(8);
+  expect(result).toBe('Breakfast');
+  // But what if clickCount affects the result?
+});
+
+3. Race Conditions
+// Multiple calls can interfere with each other
+Promise.all([
+  formatMealTime(8),
+  formatMealTime(16),
+  formatMealTime(22)
+]); // Which API call finishes first? What if they conflict?
+
+4. Hard to Debug
+// Where did this change come from?
+console.log(clickCount); // 42 - but which function call caused this?
+
+
+When we can let it slide:
+1. Event handlers (onCLick, onSubmit)
+2. useEffect hooks (for API calls, DOM updates)
+3. Component lifecycle methods
+4. State setters (setState, useState)
+
+
+Benefits of pure functions:
+1. Predictable
+2. Testable
+3. Cacheable - Results can be memoized
+4. Composable - Can be combined safely
+5. Debugging - Easy to trace
+
+
+America explain:
+- Why the beef with net reqs 
+- Caching
+- 
+
+
+To still do:
+- Replace hardcodes with fetched data
+-
+
