@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DashboardCard from "../DashboardCard";
+import SaveButton from "./SaveButton";
 import { useCats, useMeals } from "../../hooks/useSupabase";
 
 const MealManager: React.FC = () => {
@@ -10,9 +11,11 @@ const MealManager: React.FC = () => {
   const [newMealTime, setNewMealTime] = useState("12:00");
   const [selectedCatId, setSelectedCatId] = useState<string>("");
   const [newMealPortions, setNewMealPortions] = useState(1);
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleAddMeal = async () => {
     if (newMealName.trim() && selectedCatId) {
+      setIsSaving(true);
       await addMeal({
         cat_id: selectedCatId,
         name: newMealName.trim(),
@@ -24,23 +27,37 @@ const MealManager: React.FC = () => {
       setNewMealTime("12:00");
       setSelectedCatId("");
       setNewMealPortions(1);
+      setIsSaving(false);
     }
   };
 
   const handleRemoveMeal = async (id: string) => {
+    setIsSaving(true);
     await deleteMeal(id);
+    setIsSaving(false);
   };
 
   const handleToggleMeal = async (id: string, isActive: boolean) => {
+    setIsSaving(true);
     await updateMeal(id, { is_active: !isActive });
+    setIsSaving(false);
   };
 
   const handleUpdateMealTime = async (id: string, time: string) => {
+    setIsSaving(true);
     await updateMeal(id, { time });
+    setIsSaving(false);
   };
 
   const handleUpdateMealPortions = async (id: string, portions: number) => {
+    setIsSaving(true);
     await updateMeal(id, { portions: Math.max(1, portions) });
+    setIsSaving(false);
+  };
+
+  const handleSave = () => {
+    // Meals are automatically saved to Supabase, but we can show a success message
+    alert("Meal settings saved successfully!");
   };
 
   if (catsLoading || mealsLoading) {
@@ -112,10 +129,10 @@ const MealManager: React.FC = () => {
             />
             <button
               onClick={handleAddMeal}
-              disabled={!newMealName.trim() || !selectedCatId}
+              disabled={!newMealName.trim() || !selectedCatId || isSaving}
               className="px-4 py-2 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
             >
-              Add Meal
+              {isSaving ? "Adding..." : "Add Meal"}
             </button>
           </div>
         </div>
@@ -132,7 +149,8 @@ const MealManager: React.FC = () => {
                       type="time"
                       value={meal.time}
                       onChange={(e) => handleUpdateMealTime(meal.id, e.target.value)}
-                      className="px-2 py-1 bg-violet-600 border border-violet-500 rounded text-white"
+                      disabled={isSaving}
+                      className="px-2 py-1 bg-violet-600 border border-violet-500 rounded text-white disabled:opacity-50"
                     />
                     <span className="text-white font-medium">{meal.name}</span>
                     <span className="text-violet-300">for {cat?.name || 'Unknown Cat'}</span>
@@ -143,13 +161,15 @@ const MealManager: React.FC = () => {
                         type="checkbox"
                         checked={meal.is_active}
                         onChange={() => handleToggleMeal(meal.id, meal.is_active)}
-                        className="w-4 h-4 text-violet-600 bg-violet-700 border-violet-500 rounded focus:ring-violet-500"
+                        disabled={isSaving}
+                        className="w-4 h-4 text-violet-600 bg-violet-700 border-violet-500 rounded focus:ring-violet-500 disabled:opacity-50"
                       />
                       Active
                     </label>
                     <button
                       onClick={() => handleRemoveMeal(meal.id)}
-                      className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded text-sm"
+                      disabled={isSaving}
+                      className="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:bg-red-800 disabled:cursor-not-allowed text-white rounded text-sm"
                     >
                       Remove
                     </button>
@@ -164,7 +184,8 @@ const MealManager: React.FC = () => {
                     min="1"
                     value={meal.portions}
                     onChange={(e) => handleUpdateMealPortions(meal.id, parseInt(e.target.value) || 1)}
-                    className="w-16 px-2 py-1 bg-violet-600 border border-violet-500 rounded text-white text-center"
+                    disabled={isSaving}
+                    className="w-16 px-2 py-1 bg-violet-600 border border-violet-500 rounded text-white text-center disabled:opacity-50"
                   />
                 </div>
               </div>
@@ -175,6 +196,16 @@ const MealManager: React.FC = () => {
         {meals.length === 0 && (
           <p className="text-violet-300 text-center py-4">No meals configured yet. Add your first meal above!</p>
         )}
+
+        {/* Save Button */}
+        <SaveButton 
+          onSave={handleSave}
+          disabled={isSaving}
+          text="Save Meal Settings"
+          loadingText="Saving..."
+          variant="success"
+          size="sm"
+        />
       </div>
     </DashboardCard>
   );

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import DashboardCard from "../DashboardCard";
+import SaveButton from "./SaveButton";
 import { useCats } from "../../hooks/useSupabase";
 
 const CatManager: React.FC = () => {
@@ -7,16 +8,21 @@ const CatManager: React.FC = () => {
   const [newCatName, setNewCatName] = useState("");
   const [editingCat, setEditingCat] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
 
   const handleAddCat = async () => {
     if (newCatName.trim()) {
+      setIsSaving(true);
       await addCat(newCatName.trim());
       setNewCatName("");
+      setIsSaving(false);
     }
   };
 
   const handleRemoveCat = async (id: string) => {
+    setIsSaving(true);
     await deleteCat(id);
+    setIsSaving(false);
   };
 
   const startEditing = (cat: any) => {
@@ -26,15 +32,22 @@ const CatManager: React.FC = () => {
 
   const saveEdit = async () => {
     if (editName.trim() && editingCat) {
+      setIsSaving(true);
       await updateCat(editingCat, { name: editName.trim() });
       setEditingCat(null);
       setEditName("");
+      setIsSaving(false);
     }
   };
 
   const cancelEdit = () => {
     setEditingCat(null);
     setEditName("");
+  };
+
+  const handleSave = () => {
+    // Cats are automatically saved to Supabase, but we can show a success message
+    alert("Cat settings saved successfully!");
   };
 
   if (loading) {
@@ -76,9 +89,10 @@ const CatManager: React.FC = () => {
           />
           <button
             onClick={handleAddCat}
-            className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-colors"
+            disabled={isSaving}
+            className="px-4 py-2 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-800 disabled:cursor-not-allowed text-white rounded-lg transition-colors"
           >
-            Add Cat
+            {isSaving ? "Adding..." : "Add Cat"}
           </button>
         </div>
 
@@ -97,7 +111,8 @@ const CatManager: React.FC = () => {
                   />
                   <button
                     onClick={saveEdit}
-                    className="px-3 py-1 bg-green-600 hover:bg-green-500 text-white rounded text-sm"
+                    disabled={isSaving}
+                    className="px-3 py-1 bg-green-600 hover:bg-green-500 disabled:bg-green-800 text-white rounded text-sm"
                   >
                     Save
                   </button>
@@ -119,7 +134,8 @@ const CatManager: React.FC = () => {
                   </button>
                   <button
                     onClick={() => handleRemoveCat(cat.id)}
-                    className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded text-sm"
+                    disabled={isSaving}
+                    className="px-3 py-1 bg-red-600 hover:bg-red-500 disabled:bg-red-800 text-white rounded text-sm"
                   >
                     Remove
                   </button>
@@ -132,6 +148,16 @@ const CatManager: React.FC = () => {
         {cats.length === 0 && (
           <p className="text-violet-300 text-center py-4">No cats added yet. Add your first cat above!</p>
         )}
+
+        {/* Save Button */}
+        <SaveButton 
+          onSave={handleSave}
+          disabled={isSaving}
+          text="Save Cat Settings"
+          loadingText="Saving..."
+          variant="primary"
+          size="sm"
+        />
       </div>
     </DashboardCard>
   );
