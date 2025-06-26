@@ -13,4 +13,3 @@ Mechanical Parts:
 - 3D Printed Parts
 - Arduino 
 - ESP32
-- 
