@@ -1,50 +1,32 @@
 import { useState } from "react";
 import DashboardCard from "../DashboardCard";
+import { useCats } from "../../hooks/useSupabase";
 
-interface Cat {
-  id: string;
-  name: string;
-  portions?: number;
-}
-
-interface CatManagerProps {
-  cats: Cat[];
-  onCatsChange: (cats: Cat[]) => void;
-}
-
-const CatManager: React.FC<CatManagerProps> = ({ cats, onCatsChange }) => {
+const CatManager: React.FC = () => {
+  const { cats, loading, error, addCat, updateCat, deleteCat } = useCats();
   const [newCatName, setNewCatName] = useState("");
   const [editingCat, setEditingCat] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
-  const addCat = () => {
+  const handleAddCat = async () => {
     if (newCatName.trim()) {
-      const newCat: Cat = {
-        id: Date.now().toString(),
-        name: newCatName.trim(),
-        portions: 1,
-      };
-      onCatsChange([...cats, newCat]);
+      await addCat(newCatName.trim());
       setNewCatName("");
     }
   };
 
-  const removeCat = (id: string) => {
-    onCatsChange(cats.filter(cat => cat.id !== id));
+  const handleRemoveCat = async (id: string) => {
+    await deleteCat(id);
   };
 
-  const startEditing = (cat: Cat) => {
+  const startEditing = (cat: any) => {
     setEditingCat(cat.id);
     setEditName(cat.name);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (editName.trim() && editingCat) {
-      onCatsChange(
-        cats.map(cat =>
-          cat.id === editingCat ? { ...cat, name: editName.trim() } : cat
-        )
-      );
+      await updateCat(editingCat, { name: editName.trim() });
       setEditingCat(null);
       setEditName("");
     }
@@ -55,13 +37,27 @@ const CatManager: React.FC<CatManagerProps> = ({ cats, onCatsChange }) => {
     setEditName("");
   };
 
-  const updatePortions = (id: string, portions: number) => {
-    onCatsChange(
-      cats.map(cat =>
-        cat.id === id ? { ...cat, portions: Math.max(1, portions) } : cat
-      )
+  if (loading) {
+    return (
+      <DashboardCard>
+        <div className="p-4">
+          <h2 className="text-xl font-bold text-white mb-4">Cat Management</h2>
+          <p className="text-violet-300 text-center py-4">Loading cats...</p>
+        </div>
+      </DashboardCard>
     );
-  };
+  }
+
+  if (error) {
+    return (
+      <DashboardCard>
+        <div className="p-4">
+          <h2 className="text-xl font-bold text-white mb-4">Cat Management</h2>
+          <p className="text-red-400 text-center py-4">Error: {error}</p>
+        </div>
+      </DashboardCard>
+    );
+  }
 
   return (
     <DashboardCard>
@@ -76,10 +72,10 @@ const CatManager: React.FC<CatManagerProps> = ({ cats, onCatsChange }) => {
             onChange={(e) => setNewCatName(e.target.value)}
             placeholder="Enter cat name"
             className="flex-1 px-3 py-2 bg-violet-700 border border-violet-600 rounded-lg text-white placeholder-violet-300 focus:outline-none focus:border-violet-400"
-            onKeyPress={(e) => e.key === "Enter" && addCat()}
+            onKeyPress={(e) => e.key === "Enter" && handleAddCat()}
           />
           <button
-            onClick={addCat}
+            onClick={handleAddCat}
             className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white rounded-lg transition-colors"
           >
             Add Cat
@@ -115,16 +111,6 @@ const CatManager: React.FC<CatManagerProps> = ({ cats, onCatsChange }) => {
               ) : (
                 <>
                   <span className="flex-1 text-white font-medium">{cat.name}</span>
-                  <div className="flex items-center gap-2">
-                    <label className="text-violet-200 text-sm">Portions:</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={cat.portions || 1}
-                      onChange={(e) => updatePortions(cat.id, parseInt(e.target.value) || 1)}
-                      className="w-16 px-2 py-1 bg-violet-600 border border-violet-500 rounded text-white text-center"
-                    />
-                  </div>
                   <button
                     onClick={() => startEditing(cat)}
                     className="px-3 py-1 bg-blue-600 hover:bg-blue-500 text-white rounded text-sm"
@@ -132,7 +118,7 @@ const CatManager: React.FC<CatManagerProps> = ({ cats, onCatsChange }) => {
                     Edit
                   </button>
                   <button
-                    onClick={() => removeCat(cat.id)}
+                    onClick={() => handleRemoveCat(cat.id)}
                     className="px-3 py-1 bg-red-600 hover:bg-red-500 text-white rounded text-sm"
                   >
                     Remove
