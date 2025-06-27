@@ -137,53 +137,58 @@ const MealManager: React.FC = () => {
             </div>
             
             {/* Cat selection checkboxes */}
-            <div className="space-y-3">
-              <label className="text-violet-200 text-sm font-medium">Select cats for this meal:</label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {cats.map(cat => (
-                  <label key={cat.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10 hover:border-green-500/30 transition-all cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={selectedCatIds.includes(cat.id)}
-                      onChange={() => handleCatSelection(cat.id)}
-                      className="w-4 h-4 text-green-600 bg-white/10 border-green-500/30 rounded focus:ring-green-500/20"
-                    />
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 bg-gradient-to-br from-violet-400 to-purple-500 rounded-full flex items-center justify-center">
-                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                        </svg>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="space-y-3">
+                <label className="text-violet-200 text-sm font-medium">Select cats for this meal:</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {cats.map(cat => (
+                    <label key={cat.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10 hover:border-green-500/30 transition-all cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={selectedCatIds.includes(cat.id)}
+                        onChange={() => handleCatSelection(cat.id)}
+                        className="w-4 h-4 text-green-600 bg-white/10 border-green-500/30 rounded focus:ring-green-500/20"
+                      />
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 bg-gradient-to-br from-violet-400 to-purple-500 rounded-full flex items-center justify-center">
+                          <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                          </svg>
+                        </div>
+                        <span className="text-white font-medium">{cat.name}</span>
                       </div>
-                      <span className="text-white font-medium">{cat.name}</span>
-                    </div>
-                  </label>
-                ))}
+                    </label>
+                  ))}
+                </div>
               </div>
-            </div>
-            
-            <div className="flex gap-3">
-              <input
-                type="number"
-                min="1"
-                value={newMealPortions}
-                onChange={(e) => setNewMealPortions(parseInt(e.target.value) || 1)}
-                placeholder="Portions per cat"
-                className="flex-1 px-4 py-3 bg-white/10 border border-green-500/30 rounded-lg text-white focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/20 transition-all"
-              />
-              <button
-                onClick={handleAddMeal}
-                disabled={!newMealName.trim() || selectedCatIds.length === 0 || isSaving}
-                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:shadow-none"
-              >
-                {isSaving ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                    Adding...
-                  </div>
-                ) : (
-                  `Add Meal${selectedCatIds.length > 1 ? 's' : ''}`
-                )}
-              </button>
+              
+              <div className="space-y-3">
+                <label className="text-violet-200 text-sm font-medium">Portions per cat:</label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="number"
+                    min="1"
+                    value={newMealPortions}
+                    onChange={(e) => setNewMealPortions(parseInt(e.target.value) || 1)}
+                    placeholder="Portions per cat"
+                    className="flex-1 px-4 py-3 bg-white/10 border border-green-500/30 rounded-lg text-white focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/20 transition-all"
+                  />
+                  <button
+                    onClick={handleAddMeal}
+                    disabled={!newMealName.trim() || selectedCatIds.length === 0 || isSaving}
+                    className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:shadow-none"
+                  >
+                    {isSaving ? (
+                      <div className="flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                        Adding...
+                      </div>
+                    ) : (
+                      `Add Meal${selectedCatIds.length > 1 ? 's' : ''}`
+                    )}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
