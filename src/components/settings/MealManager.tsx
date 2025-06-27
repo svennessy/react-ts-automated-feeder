@@ -10,23 +10,39 @@ const MealManager: React.FC = () => {
   
   const [newMealName, setNewMealName] = useState("");
   const [newMealTime, setNewMealTime] = useState("12:00");
-  const [selectedCatId, setSelectedCatId] = useState<string>("");
+  const [selectedCatIds, setSelectedCatIds] = useState<string[]>([]);
   const [newMealPortions, setNewMealPortions] = useState(1);
   const [isSaving, setIsSaving] = useState(false);
 
+  const handleCatSelection = (catId: string) => {
+    setSelectedCatIds(prev => 
+      prev.includes(catId) 
+        ? prev.filter(id => id !== catId)
+        : [...prev, catId]
+    );
+  };
+
   const handleAddMeal = async () => {
-    if (newMealName.trim() && selectedCatId) {
+    if (newMealName.trim() && selectedCatIds.length > 0) {
       setIsSaving(true);
-      await addMeal({
-        cat_id: selectedCatId,
-        name: newMealName.trim(),
-        time: newMealTime,
-        portions: newMealPortions,
-        is_active: true
-      });
+      
+      // Create a meal for each selected cat
+      const mealPromises = selectedCatIds.map(catId => 
+        addMeal({
+          cat_id: catId,
+          name: newMealName.trim(),
+          time: newMealTime,
+          portions: newMealPortions,
+          is_active: true
+        })
+      );
+      
+      await Promise.all(mealPromises);
+      
+      // Reset form
       setNewMealName("");
       setNewMealTime("12:00");
-      setSelectedCatId("");
+      setSelectedCatIds([]);
       setNewMealPortions(1);
       setIsSaving(false);
     }
@@ -59,6 +75,16 @@ const MealManager: React.FC = () => {
   const handleSave = () => {
     alert("Meal settings saved successfully!");
   };
+
+  // Group meals by name and time to show them together
+  const groupedMeals = meals.reduce((groups, meal) => {
+    const key = `${meal.name}-${meal.time}`;
+    if (!groups[key]) {
+      groups[key] = [];
+    }
+    groups[key].push(meal);
+    return groups;
+  }, {} as Record<string, typeof meals>);
 
   if (catsLoading || mealsLoading) {
     return (
@@ -110,51 +136,69 @@ const MealManager: React.FC = () => {
               />
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <select
-                value={selectedCatId}
-                onChange={(e) => setSelectedCatId(e.target.value)}
-                className="px-4 py-3 bg-white/10 border border-green-500/30 rounded-lg text-white focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/20 transition-all"
-              >
-                <option value="">Select a cat</option>
+            {/* Cat selection checkboxes */}
+            <div className="space-y-3">
+              <label className="text-violet-200 text-sm font-medium">Select cats for this meal:</label>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {cats.map(cat => (
-                  <option key={cat.id} value={cat.id}>{cat.name}</option>
-                ))}
-              </select>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  min="1"
-                  value={newMealPortions}
-                  onChange={(e) => setNewMealPortions(parseInt(e.target.value) || 1)}
-                  placeholder="Portions"
-                  className="flex-1 px-4 py-3 bg-white/10 border border-green-500/30 rounded-lg text-white focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/20 transition-all"
-                />
-                <button
-                  onClick={handleAddMeal}
-                  disabled={!newMealName.trim() || !selectedCatId || isSaving}
-                  className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:shadow-none"
-                >
-                  {isSaving ? (
+                  <label key={cat.id} className="flex items-center gap-3 p-3 bg-white/5 rounded-lg border border-white/10 hover:border-green-500/30 transition-all cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedCatIds.includes(cat.id)}
+                      onChange={() => handleCatSelection(cat.id)}
+                      className="w-4 h-4 text-green-600 bg-white/10 border-green-500/30 rounded focus:ring-green-500/20"
+                    />
                     <div className="flex items-center gap-2">
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Adding...
+                      <div className="w-6 h-6 bg-gradient-to-br from-violet-400 to-purple-500 rounded-full flex items-center justify-center">
+                        <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                      </div>
+                      <span className="text-white font-medium">{cat.name}</span>
                     </div>
-                  ) : (
-                    "Add Meal"
-                  )}
-                </button>
+                  </label>
+                ))}
               </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <input
+                type="number"
+                min="1"
+                value={newMealPortions}
+                onChange={(e) => setNewMealPortions(parseInt(e.target.value) || 1)}
+                placeholder="Portions per cat"
+                className="flex-1 px-4 py-3 bg-white/10 border border-green-500/30 rounded-lg text-white focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/20 transition-all"
+              />
+              <button
+                onClick={handleAddMeal}
+                disabled={!newMealName.trim() || selectedCatIds.length === 0 || isSaving}
+                className="px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 disabled:from-gray-600 disabled:to-gray-700 disabled:cursor-not-allowed text-white rounded-lg font-medium transition-all duration-200 shadow-lg hover:shadow-xl disabled:shadow-none"
+              >
+                {isSaving ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                    Adding...
+                  </div>
+                ) : (
+                  `Add Meal${selectedCatIds.length > 1 ? 's' : ''}`
+                )}
+              </button>
             </div>
           </div>
         </div>
 
         {/* Meal list */}
         <div className="space-y-4">
-          {meals.map(meal => {
-            const cat = cats.find(c => c.id === meal.cat_id);
+          {Object.entries(groupedMeals).map(([key, mealGroup]) => {
+            const firstMeal = mealGroup[0];
+            const catNames = mealGroup.map(meal => {
+              const cat = cats.find(c => c.id === meal.cat_id);
+              return cat?.name || 'Unknown Cat';
+            }).join(', ');
+            
             return (
-              <div key={meal.id} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:border-green-500/30 transition-all duration-200">
+              <div key={key} className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:border-green-500/30 transition-all duration-200">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center">
@@ -163,23 +207,28 @@ const MealManager: React.FC = () => {
                       </svg>
                     </div>
                     <div>
-                      <h4 className="text-white font-medium text-lg">{meal.name}</h4>
-                      <p className="text-violet-300 text-sm">for {cat?.name || 'Unknown Cat'}</p>
+                      <h4 className="text-white font-medium text-lg">{firstMeal.name}</h4>
+                      <p className="text-violet-300 text-sm">for {catNames}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <label className="flex items-center gap-2 text-violet-200">
                       <input
                         type="checkbox"
-                        checked={meal.is_active}
-                        onChange={() => handleToggleMeal(meal.id, meal.is_active)}
+                        checked={mealGroup.every(meal => meal.is_active)}
+                        onChange={() => {
+                          const newActiveState = !mealGroup.every(meal => meal.is_active);
+                          mealGroup.forEach(meal => handleToggleMeal(meal.id, meal.is_active));
+                        }}
                         disabled={isSaving}
                         className="w-4 h-4 text-green-600 bg-white/10 border-green-500/30 rounded focus:ring-green-500/20 disabled:opacity-50"
                       />
                       <span className="text-sm">Active</span>
                     </label>
                     <button
-                      onClick={() => handleRemoveMeal(meal.id)}
+                      onClick={() => {
+                        mealGroup.forEach(meal => handleRemoveMeal(meal.id));
+                      }}
                       disabled={isSaving}
                       className="px-3 py-2 bg-red-500/20 hover:bg-red-500/30 disabled:bg-red-500/10 text-red-400 rounded-lg text-sm font-medium transition-colors"
                     >
@@ -193,19 +242,23 @@ const MealManager: React.FC = () => {
                     <label className="text-violet-200 text-sm font-medium">Time:</label>
                     <input
                       type="time"
-                      value={meal.time}
-                      onChange={(e) => handleUpdateMealTime(meal.id, e.target.value)}
+                      value={firstMeal.time}
+                      onChange={(e) => {
+                        mealGroup.forEach(meal => handleUpdateMealTime(meal.id, e.target.value));
+                      }}
                       disabled={isSaving}
                       className="px-3 py-2 bg-white/10 border border-green-500/30 rounded-lg text-white disabled:opacity-50 focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/20"
                     />
                   </div>
                   <div className="flex items-center gap-3">
-                    <label className="text-violet-200 text-sm font-medium">Portions:</label>
+                    <label className="text-violet-200 text-sm font-medium">Portions per cat:</label>
                     <input
                       type="number"
                       min="1"
-                      value={meal.portions}
-                      onChange={(e) => handleUpdateMealPortions(meal.id, parseInt(e.target.value) || 1)}
+                      value={firstMeal.portions}
+                      onChange={(e) => {
+                        mealGroup.forEach(meal => handleUpdateMealPortions(meal.id, parseInt(e.target.value) || 1));
+                      }}
                       disabled={isSaving}
                       className="w-20 px-3 py-2 bg-white/10 border border-green-500/30 rounded-lg text-white text-center disabled:opacity-50 focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/20"
                     />
