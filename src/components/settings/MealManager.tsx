@@ -1,6 +1,7 @@
 import { useState } from "react";
 import DashboardCard from "../DashboardCard";
 import SaveButton from "./SaveButton";
+import { Loading, Error } from "../index";
 import { useCats, useMeals } from "../../hooks/useSupabase";
 
 const MealManager: React.FC = () => {
@@ -63,10 +64,7 @@ const MealManager: React.FC = () => {
     return (
       <DashboardCard>
         <div className="p-6">
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-400"></div>
-            <span className="ml-3 text-violet-300">Loading meals...</span>
-          </div>
+          <Loading text="Loading meals..." variant="primary" />
         </div>
       </DashboardCard>
     );
@@ -76,14 +74,7 @@ const MealManager: React.FC = () => {
     return (
       <DashboardCard>
         <div className="p-6">
-          <div className="text-center py-8">
-            <div className="w-12 h-12 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-6 h-6 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
-              </svg>
-            </div>
-            <p className="text-red-400">Error: {catsError || mealsError}</p>
-          </div>
+          <Error message={catsError || mealsError || "An unknown error occurred"} />
         </div>
       </DashboardCard>
     );
