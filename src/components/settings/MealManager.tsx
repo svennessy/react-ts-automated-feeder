@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardCard from "../DashboardCard";
+import SettingsCard from "../SettingsCard";
 import SaveButton from "./SaveButton";
 import { Loading, Error } from "../index";
 import { useCats, useMeals } from "../../hooks/useSupabase";
@@ -62,26 +62,26 @@ const MealManager: React.FC = () => {
 
   if (catsLoading || mealsLoading) {
     return (
-      <DashboardCard>
+      <SettingsCard>
         <div className="p-6">
           <Loading text="Loading meals..." variant="primary" />
         </div>
-      </DashboardCard>
+      </SettingsCard>
     );
   }
 
   if (catsError || mealsError) {
     return (
-      <DashboardCard>
+      <SettingsCard>
         <div className="p-6">
           <Error message={catsError || mealsError || "An unknown error occurred"} />
         </div>
-      </DashboardCard>
+      </SettingsCard>
     );
   }
 
   return (
-    <DashboardCard>
+    <SettingsCard>
       <div className="p-6">
         {/* Add new meal section */}
         <div className="bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-xl p-6 mb-6 border border-green-500/20">
@@ -238,7 +238,7 @@ const MealManager: React.FC = () => {
           size="sm"
         />
       </div>
-    </DashboardCard>
+    </SettingsCard>
   );
 };
 

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DashboardCard from "../DashboardCard";
+import SettingsCard from "../SettingsCard";
 import SaveButton from "./SaveButton";
 import { Loading, Error } from "../index";
 import { useCats } from "../../hooks/useSupabase";
@@ -52,26 +52,26 @@ const CatManager: React.FC = () => {
 
   if (loading) {
     return (
-      <DashboardCard>
+      <SettingsCard>
         <div className="p-6">
           <Loading text="Loading cats..." variant="secondary" />
         </div>
-      </DashboardCard>
+      </SettingsCard>
     );
   }
 
   if (error) {
     return (
-      <DashboardCard>
+      <SettingsCard>
         <div className="p-6">
           <Error message={error || "An unknown error occurred"} />
         </div>
-      </DashboardCard>
+      </SettingsCard>
     );
   }
 
   return (
-    <DashboardCard>
+    <SettingsCard>
       <div className="p-6">
         {/* Add new cat section */}
         <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 rounded-xl p-6 mb-6 border border-violet-500/20">
@@ -188,7 +188,7 @@ const CatManager: React.FC = () => {
           size="sm"
         />
       </div>
-    </DashboardCard>
+    </SettingsCard>
   );
 };
 
